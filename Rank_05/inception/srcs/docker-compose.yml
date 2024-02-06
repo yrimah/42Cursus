@@ -1,0 +1,151 @@
+version: '3'
+services:
+  mariadb:
+    container_name: mariadb
+    build: requirements/mariadb
+    image: mariadb:4
+    ports:
+      - 3306:3306
+    networks:
+      - inception
+    restart: always
+    env_file: .env
+    volumes:
+      - wordpressdb:/var/lib/mysql
+  nginx:
+    container_name: nginx
+    build: requirements/nginx
+    image: nginx:4
+    ports:
+      - 443:443
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+    env_file: .env
+    volumes:
+      - wordpress_files:/var/www/html
+      - nginx_ssl:/etc/nginx/ssl
+    restart: always
+  wordpress:
+    container_name: wordpress
+    build: requirements/wordpress
+    image: wordpress:4
+    ports:
+      - 9000:9000
+    networks:
+      - inception
+    env_file: .env
+    restart: always
+    depends_on:
+      - mariadb
+    volumes:
+      - wordpress_files:/var/www/html
+  ftp:
+    container_name: ftp
+    build: requirements/bonus/ftp
+    image: ftp:4
+    ports:
+      - 21:21
+      - 20:20
+      - 40000-40100:40000-40100
+    networks:
+      - inception
+    env_file: .env
+    depends_on:
+      - wordpress
+    restart: always
+    volumes:
+      - wordpress_files:/home/$FTP_USER/ftp/files
+  adminer:
+    container_name: adminer
+    build: requirements/bonus/adminer
+    image: adminer:4
+    ports:
+      - 8080:8080
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    volumes:
+      - wordpress_files:/var/www/html
+    restart: always
+  redis:
+    container_name: redis
+    build: requirements/bonus/redis
+    image: redis:4
+    ports:
+      - 6379:6379
+    volumes:
+      - wordpress_files:/var/www/html
+    networks:
+      - inception
+    env_file: .env
+    depends_on:
+      - wordpress
+    restart: always
+  grafana:
+    container_name: grafana
+    build: requirements/bonus/grafana
+    image: grafana:4
+    ports:
+      - 3000:3000
+    networks:
+      - inception
+    env_file: .env
+    depends_on:
+      - nginx
+    volumes:
+      - grafana_data:/usr/share/grafana
+      - nginx_ssl:/grafana/nginx_ssl
+    restart: always
+  website:
+    container_name: website
+    build: requirements/bonus/website
+    image: website:4
+    ports:
+      - 8000:8000
+    networks:
+      - inception
+    volumes:
+      - website_files:/website/site/
+    restart: always
+volumes:
+  wordpressdb:
+    name: wordpressdb
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/yrimah/data/wp_db'
+  wordpress_files:
+    name: wordpress_files
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/yrimah/data/wp_files'
+  grafana_data:
+    name: grafana_data
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/yrimah/data/grafana'
+  nginx_ssl:
+    name: nginx_ssl
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/yrimah/data/nginx_ssl'
+  website_files:
+    name: website_files
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/yrimah/data/website_files'
+networks:
+  inception:
+    name: inception
