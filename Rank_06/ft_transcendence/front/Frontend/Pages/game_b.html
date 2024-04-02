@@ -1,0 +1,54 @@
+<div id="profile" class="container-fluid">
+    <div class="row">
+		<div class="col-auto">
+			<nav class="sidebar-navigation">
+				<ul>
+					<li class="nav-item" onclick="add_pr()">
+						<a class="nav-link"  >
+							<i class="fas fa-home"></i>
+							<span class="tooltip" data-i18n="nav_home"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_gm()">
+						<a class="nav-link" >
+							<i class="fas fa-gamepad"></i>
+							<span class="tooltip" data-i18n="nav_game"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_hs()">
+						<a class="nav-link" >
+							<i class="fas fa-history"></i>
+							<span class="tooltip" data-i18n="nav_his"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_fr()">
+						<a class="nav-link">
+							<i class="fas fa-user-friends"></i>
+							<span class="tooltip" data-i18n="nav_fr"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_st()">
+						<a class="nav-link">
+							<i class="fas fa-cogs"></i>
+							<span class="tooltip" data-i18n="nav_st"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="logout()">
+						<a class="nav-link">
+							<i class="fas fa-sign-out-alt"></i>
+							<span class="tooltip" data-i18n="nav_logout"></span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+			
+			<div class="col">
+				<div class="game-section d-flex flex-column justify-content-center align-items-center">
+					<button type="button" class="btn-game retro-btn" style="margin-bottom: 20px;" id="oneVsOne" data-i18n="vs"></button>
+					<button type="button" class="btn-game retro-btn" id="tournament" data-i18n="tour"></button>
+					<img src="Frontend/Assets/cat.gif" alt="Animated Nyan Cat" class="mt-3 retro-gif">
+				</div>
+			</div>
+    </div>
+</div> 

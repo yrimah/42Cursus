@@ -1,2 +1,1 @@
-# 42Cursus : ft_transcendence : The Next Level
-This is the new version of the last project of 42 training common core.
+The main purpose of this website is to play Pong versus other players

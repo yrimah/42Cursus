@@ -1,0 +1,98 @@
+<div id="profile" class="container-fluid">
+    <div class="row">
+		<div class="col-auto">
+			<nav class="sidebar-navigation">
+				<ul>
+					<li class="nav-item" onclick="add_pr()">
+						<a class="nav-link"  >
+							<i class="fas fa-home"></i>
+							<span class="tooltip" data-i18n="nav_home"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_gm()">
+						<a class="nav-link" >
+							<i class="fas fa-gamepad"></i>
+							<span class="tooltip" data-i18n="nav_game"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_hs()">
+						<a class="nav-link" >
+							<i class="fas fa-history"></i>
+							<span class="tooltip" data-i18n="nav_his"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_fr()">
+						<a class="nav-link">
+							<i class="fas fa-user-friends"></i>
+							<span class="tooltip" data-i18n="nav_fr"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_st()">
+						<a class="nav-link">
+							<i class="fas fa-cogs"></i>
+							<span class="tooltip" data-i18n="nav_st"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="logout()">
+						<a class="nav-link">
+							<i class="fas fa-sign-out-alt"></i>
+							<span class="tooltip" data-i18n="nav_logout"></span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+			
+			<div class="col d-flex align-items-center justify-content-center">
+				<form autocomplete="off" id="update_pwd" class="form" method="PUT" style="max-width: 500px; width: 100%;">
+					<div class="text-center mb-4">
+						<h1 data-i18n="upd_p"></h1>
+					</div>
+			
+					<!-- Old Password Field -->
+					<label for="old_password" data-i18n="old_p" class="form-label" style="margin-bottom: 18px; color: #dee2e6;"></label>
+					<div class="form-group mb-3 control block-cube block-input">
+						<input id="old_password" data-i18n="old_ph" autocomplete="l" name="old_password" type="password" class="form-control"  required>
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+					</div>
+			
+					<!-- New Password Field -->
+					<label data-i18n="new_p" for="new_password" class="form-label" style="margin-bottom: 18px; color: #dee2e6;"></label>
+					<div class="form-group mb-3 control block-cube block-input">
+						<input id="new_password" data-i18n="new_ph" autocomplete="l" name="new_password" type="password" class="form-control"  style="margin-bottom: 30px;" required>
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+					</div>
+			
+					<!-- Submit Button -->
+					<button class="btn block-cube block-cube-hover" type="submit">
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+						<div data-i18n="change" class="text"></div>
+					</button>
+				</form>
+			</div>
+    </div>
+</div> 

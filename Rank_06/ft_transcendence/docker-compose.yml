@@ -1,61 +1,239 @@
-version: '3'
+version: "3.8"
+
+volumes:
+  certs:
+    driver: local
+  esdata01:
+    driver: local
+  kibanadata:
+    driver:  local
+  logstashdata01:
+    driver: local
+  metricbeatdata01:
+    driver: local
+  postgres_data:
+    driver: local
+  app_data: 
+    driver: local
+
+networks:
+  default:
+    name: transcendence
+    external: false
+
 services:
-  elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    networks:
-      - transcendence
-    restart: always
+  setup:
+    container_name: setup
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - "./elk/setup/.script.sh:/usr/share/elasticsearch/.script.sh:ro"
     env_file:
       - .env
-    volumes:
-      - elastic_files:/usr/share/elasticsearch/data
-  logstash:
-    container_name: logstash
-    image: docker.elastic.co/logstash/logstash:8.12.0
-    networks:
-      - transcendence
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - ./services/logs/logstash:/logstash_dir
-    ports:
-      - '9600:9600'
+    user: "0"
+    command: "./.script.sh"
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  es01:
+    container_name: es01
     depends_on:
-      - elasticsearch
-    command: logstash -f /logstash_dir/logstash.conf
+      setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata01:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
+    env_file:
+      - .env
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
   kibana:
     container_name: kibana
-    image: docker.elastic.co/kibana/kibana:8.12.0
+    depends_on:
+      es01:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: kibana
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+      - "./elk/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro"
+      - "./elk/kibana/.config.sh:/usr/share/kibana/config/.config.sh:ro"
+      - "./elk/kibana/dashboards/app_logs_dashboard.ndjson:/usr/share/kibana/config/app_logs_dashboard.ndjson:ro"
+      - "./elk/kibana/dashboards/users_stats_dashboard.ndjson:/usr/share/kibana/config/users_stats_dashboard.ndjson:ro"
     ports:
-      - '5601:5601'
-    networks:
-      - transcendence
-    restart: always
+      - ${KIBANA_PORT}:5601
     env_file:
       - .env
-    depends_on:
-      - elasticsearch
-volumes:
-  elastic_files:
-    name: elastic_files
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/home/yrimah42/data/elastic_files'
-networks:
-  transcendence:
-    name: transcendence
+    mem_limit: ${KB_MEM_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I -k https://localhost:5601 | grep -q 'HTTP/1.1 302 Found' && ./config/.config.sh && \
+          (curl -s -k -o /dev/null -w '%{http_code}' -X GET -u ${ELASTIC_USER}:${ELASTIC_PASSWORD} ${ELASTICSEARCH_HOSTS}/_ilm/policy/${ILM_POLICY_NAME1} -H 'Content-Type: application/json' | grep -q '200') && \
+          (curl -s -k -o /dev/null -w '%{http_code}' -X GET -u ${ELASTIC_USER}:${ELASTIC_PASSWORD} ${ELASTICSEARCH_HOSTS}/_ilm/policy/${ILM_POLICY_NAME2} -H 'Content-Type: application/json' | grep -q '200')",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
   
-  # logstash:
-  #   name: logstash
-  #   driver: local
-  #   driver_opts:
-  #     type: 'none'
-  #     o: 'bind'
-  #     device: '/home/yrimah42/data/logstash'
+  logstash01:
+    container_name: logstash
+    depends_on:
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: logstash
+    user: root
+    volumes:
+      - certs:/usr/share/logstash/certs
+      - logstashdata01:/usr/share/logstash/data
+      - "./elk/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro"
+      - "./elk/logstash/templates/users_data_template.json:/usr/share/logstash/users_data_template.json:ro"
+      - "./elk/logstash/templates/app_logs_template.json:/usr/share/logstash/app_logs_template.json:ro"
+      - "./elk/postgres/postgresql-42.7.2.jar:/usr/share/java/postgresql-42.7.2.jar"
+    environment:
+      - xpack.monitoring.enabled=false
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:1337:1337/udp"
+  
+  metricbeat01:
+    container_name: metricbeat
+    depends_on:
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - certs:/usr/share/metricbeat/certs
+      - metricbeatdata01:/usr/share/metricbeat/data
+      - "./elk/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+    env_file:
+      - .env
+    command:
+      - --strict.perms=false
+
+  postgres:
+    container_name: postgres
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    restart: always
+
+  rproxy:
+    image: rproxy:1.0
+    build: ./rproxy
+    container_name: rproxy
+    ports:
+      - "80:80"
+      - "81:81"
+      - "82:82"
+    command : "nginx -g 'daemon off;'"
+    volumes:
+      - app_data:/etc/nginx/ssl
+    depends_on:
+      - auth
+      - front
+      - player
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:1337"
+    restart: always
+
+  auth:
+    image: auth:1.0
+    build: ./auth/
+    container_name: auth
+    depends_on:
+      - postgres
+    entrypoint: "./docker-entrypoint.sh"
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=auth.settings
+    restart: always
+
+  friend:
+    image: friend:1.0
+    build: ./friend/
+    container_name: friend
+    depends_on:
+      - postgres
+    entrypoint: "./docker-entrypoint.sh"
+    ports:
+      - 8001:8001
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=friend.settings
+    restart: always
+
+  player:
+    image: player:1.0
+    build: ./player/
+    container_name: player
+    depends_on:
+      - postgres
+    entrypoint: "./docker-entrypoint.sh"
+    ports:
+      - 8002:8002
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=player.settings
+    restart: always
+
+  front:
+    image: front:1.0
+    build: ./front/
+    container_name: front
+    entrypoint: "./docker-entrypoint.sh"
+    ports:
+      - 443:443
+    env_file:
+      - .env
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:1337"
+    restart: always

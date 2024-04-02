@@ -1,16 +1,14 @@
 all:
-	mkdir -p /home/yrimah42/data/elastic_files
-	sudo docker-compose up --build
+	docker-compose up --build
 
 detach:
-	mkdir -p /home/yrimah42/data/elastic_files
-	sudo docker-compose up --build -d
+	docker-compose up --build -d
+
+start:
+	docker-compose start
 
 stop:
-	sudo docker-compose stop
+	docker-compose stop
 
 down:
-	sudo docker-compose down
-
-rm_volume:
-	rm -rf /home/yrimah42/data/elastic_files
+	docker-compose down

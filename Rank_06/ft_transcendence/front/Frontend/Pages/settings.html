@@ -1,0 +1,139 @@
+<div id="profile" class="container-fluid">
+    <div class="row">
+		<div class="col-auto">
+			<nav class="sidebar-navigation">
+				<ul>
+					<li class="nav-item" onclick="add_pr()">
+						<a class="nav-link"  >
+							<i class="fas fa-home"></i>
+							<span class="tooltip" data-i18n="nav_home"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_gm()">
+						<a class="nav-link" >
+							<i class="fas fa-gamepad"></i>
+							<span class="tooltip" data-i18n="nav_game"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_hs()">
+						<a class="nav-link" >
+							<i class="fas fa-history"></i>
+							<span class="tooltip" data-i18n="nav_his"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_fr()">
+						<a class="nav-link">
+							<i class="fas fa-user-friends"></i>
+							<span class="tooltip" data-i18n="nav_fr"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="add_st()">
+						<a class="nav-link">
+							<i class="fas fa-cogs"></i>
+							<span class="tooltip" data-i18n="nav_st"></span>
+						</a>
+					</li>
+					<li class="nav-item" onclick="logout()">
+						<a class="nav-link">
+							<i class="fas fa-sign-out-alt"></i>
+							<span class="tooltip" data-i18n="nav_logout"></span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+			
+			<div class="col d-flex align-items-center justify-content-center">
+				<form id="update_info" class="form" method="PUT" style="max-width: 500px; width: 100%;">
+				   <div class="text-center mb-4">
+						<h1 data-i18n="st"></h1>
+					</div>
+					
+					<!-- Name Field -->
+					<label for="name" data-i18n="dis_n" class="form-label" style="margin-bottom: 18px;color: #dee2e6;"></label>
+					<div class="form-group mb-3 control block-cube block-input">
+						<input id="name" name="name" data-i18n="dis_nh" type="text" class="form-control"  required>
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+					</div>
+					
+					<!-- Tournament Name Field -->
+					<label for="disp_name" data-i18n="dis_un" class="form-label" style="margin-bottom: 18px; color: #dee2e6;"></label>
+					<div class="form-group mb-3 control block-cube block-input">
+                    
+						<input id="disp_name" data-i18n="dis_unh" name="disp_name" type="text" class="form-control" style="margin-bottom: 30px;"  required>
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+					</div>
+					
+					<!-- Update Info Button -->
+					<button id="up" class="btn block-cube block-cube-hover mb-3" type="submit" >
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="text" data-i18n="up_inf"></div>
+					</button>
+					
+					<div class="divider-or-container mb-3">
+						<div class="divider-line"></div>
+						<div class="divider-or" data-i18n="or"></div>
+						<div class="divider-line"></div>
+					</div>
+					
+					<!-- Change Password Button -->
+					<button id="bn"class="btn block-cube block-cube-hover mb-3" type="button" onclick="go_pwd()">
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="text" data-i18n="chng"></div>
+					</button>
+					
+					<div class="divider-or-container mb-3">
+						<div class="divider-line"></div>
+						<div class="divider-or" data-i18n="or" ></div>
+						<div class="divider-line"></div>
+					</div>
+					
+					<!-- Change Avatar Button -->
+					<button id="avt" class="btn block-cube block-cube-hover" type="button">
+						<div class="bg-top">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg-right">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="bg">
+							<div class="bg-inner"></div>
+						</div>
+						<div class="text" data-i18n="chng_av"></div>
+					</button>
+				</form>
+			</div>
+    </div>
+</div> 
