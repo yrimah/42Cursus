@@ -31,7 +31,9 @@ function updatePassword() {
 				});
 				const result = await response.json();
 				if (result.error) {
-					alert(result.error);
+					// alert(result.error);
+
+					display_password_error(result.error);
 					
 				} else {
 					// alert(result.message);
@@ -49,38 +51,23 @@ function updatePassword() {
 }
 
 
-async function fetchAndPrefillUserInfo() {
-    const myform = document.getElementById('update_info');
-	if (myform) {
-		const jwtToken = localStorage.getItem('jwt');
-		const jwtTokenCookie = getCookie('jwt');
-		let headers = {};
-		if (jwtToken) {
-			headers['Authorization'] = `Bearer ${jwtToken}`;
-			//disable button
-			
-		} else if (jwtTokenCookie) {
-			headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
-			document.getElementById("up").disabled = true;
-			document.getElementById("bn").disabled = true;
-			document.getElementById("avt").disabled = true;
-		}
-		try {
-			const response = await fetch('http://localhost:82/profile/', {
-				method: 'GET',
-				headers: headers,
-			});
-			const result = await response.json();
-			if (result.error) {
-				alert(result.error);
-			} else {
-				myform.name.value = result.user.display_name;
-				myform.disp_name.value = result.user.username;
+function display_password_error(error) {
+	// resetErrorDisplay();
+	document.querySelectorAll('.text-danger').forEach(errorElement => {
+        errorElement.style.display = 'none';
+    });
+
+	if (error) {
+		for(const [key, value] of Object.entries(error)) {
+			const errorElement = document.getElementById(`${key}`);
+			if (errorElement) {
+				errorElement.style.display = 'block';
+
+				// const inputElement = document.querySelector(`input[name="${key}"]`);
+				// if (inputElement) {
+				// 	inputElement.style.marginBottom = '0px';
+				// }
 			}
-		}
-		catch (error) {
-			console.error(error);
-			alert('An error occurred');
 		}
 	}
 }
@@ -90,6 +77,54 @@ async function fetchAndPrefillUserInfo() {
 function updateUsername() {
 	const updateUsernameForm = document.getElementById('update_info');
 	if (updateUsernameForm) {
+		let hadi;
+
+
+
+		async function fetchAndPrefillUserInfo() {
+			const myform = document.getElementById('update_info');
+			if (myform) {
+		
+				
+		
+				const jwtToken = localStorage.getItem('jwt');
+				const jwtTokenCookie = getCookie('jwt');
+				let headers = {};
+				if (jwtToken) {
+					headers['Authorization'] = `Bearer ${jwtToken}`;
+					//disable button
+					
+				} else if (jwtTokenCookie) {
+					headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
+					document.getElementById("up").disabled = true;
+					document.getElementById("bn").disabled = true;
+					document.getElementById("avt").disabled = true;
+					document.getElementById("avatar").disabled = true;
+					document.getElementById("name").disabled = true;
+					document.getElementById("disp_name").disabled = true;
+				}
+				try {
+					const response = await fetch('http://localhost:82/profile/', {
+						method: 'GET',
+						headers: headers,
+					});
+					const result = await response.json();
+					if (result.error) {
+						alert(result.error);
+					} else {
+						myform.name.value = result.user.display_name;
+						myform.disp_name.value = result.user.username;
+						hadi = result.user.username;
+					}
+				}
+				catch (error) {
+					console.error(error);
+					alert('An error occurred');
+				}
+			}
+		}
+		
+
 
 		fetchAndPrefillUserInfo();
 
@@ -113,20 +148,34 @@ function updateUsername() {
 				display_name: updateUsernameForm.name.value,
 			};
 			try {
-				const response = await fetch('http://localhost:82/chihaja/', {
+				const response = await fetch('http://localhost:82/profile/', {
 					method: 'PUT',
 					headers: headers,
 					body: JSON.stringify(data),
 				});
 				const result = await response.json();
 				if (result.error) {
-					alert(result.error);
+					// alert(result.error);
+					//display error
+					display_error_up_form(result.error);
 					
 				} else {
+
+
+					if (data.username !== hadi) {
+						console.log(data.username, hadi);
+						
+						logout(); 
+					} else {
+						window.history.pushState({}, "", "/profile");
+						urlLocationHandler(); 
+					}
+
 					// alert(result.message);
 					//push
-					window.history.pushState({}, "", "/profile");
-					urlLocationHandler();
+					// logout();
+					// window.history.pushState({}, "", "/profile");
+					// urlLocationHandler();
 				}
 			}
 			catch (error) {
@@ -137,11 +186,125 @@ function updateUsername() {
 	}
 }
 
+//display error
+function display_error_up_form(error) {
+	//print object in just alert key: field
+	// alert(JSON.stringify(error));
+	//rest error
+	const sp1 = document.getElementById("display_name");
+	const sp2 = document.getElementById("username");
+	sp1.style.display = 'none';
+	sp2.style.display = 'none';
+
+	//display error
+	if (error) {
+		for(const [key, value] of Object.entries(error)) {
+			const errorElement = document.getElementById(`${key}`);
+			if (errorElement) {
+				errorElement.style.display = 'block';
+			}
+		}
+	}
+}
+	
+
+
+
+
+
+
+
+
+async function fetchFriendships() {
+    const jwtToken = localStorage.getItem('jwt');
+    const jwtTokenCookie = getCookie('jwt');
+
+    let headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    };
+    if (jwtToken) {
+        headers['Authorization'] = `Bearer ${jwtToken}`;
+    } else if (jwtTokenCookie) {
+        headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
+    }
+
+    try {
+        const response = await fetch('http://localhost:81/friends/', { 
+            method: 'GET',
+            headers: headers,
+        });
+
+        if (response.status === 200) {
+            const data = await response.json();
+            return data.friendships; 
+        } else {
+            console.error('Failed to fetch friendships', response.status);
+            return []; 
+        }
+    } catch (error) {
+        console.error('Error fetching friendships:', error);
+        return []; 
+    }
+}
+
+async function populateFriendsList() {
+
+		const friendships = await fetchFriendships(); 
+		const friendsListUl = document.querySelector('.friends-list ul');
+
+		
+		friendsListUl.innerHTML = '';
+
+		friendships.forEach(friend => {
+		
+			const li = document.createElement('li');
+			li.className = 'friend';
+
+			
+			const img = document.createElement('img');
+			img.src = friend.avatar;
+			img.className = 'avatarr';
+
+			
+			const div = document.createElement('div');
+			div.className = 'friend-info';
+
+			
+			const h2 = document.createElement('h2');
+			h2.className = 'friend-name';
+			h2.textContent = friend.display_name;
+			h2.style.color = 'black';
+
+			
+			const p = document.createElement('p');
+			p.className = 'friend-status';
+			p.textContent  = friend.status;
+				
+		
+			
+			div.appendChild(h2);
+			div.appendChild(p);
+			li.appendChild(img);
+			li.appendChild(div);
+
+		
+			friendsListUl.appendChild(li);
+    	});
+	}
+
+
+
+
+
+
 
 //add friend
 function addFriend() {
 	const addFriendForm = document.getElementById('add_friend');
+	
 	if (addFriendForm) {
+		populateFriendsList();
 		addFriendForm.onsubmit = async function(e) {
 			e.preventDefault();
 			const jwtToken = localStorage.getItem('jwt');
@@ -157,23 +320,37 @@ function addFriend() {
 			}
 
 			const data = {
-				friend: addFriendForm.friend_name.value,
+				username: addFriendForm.friend_name.value,
 			};
 			try {
-				const response = await fetch('http://localhost:82/add_friend/', {
+				const response = await fetch('http://localhost:81/friends/', {
 					method: 'POST',
 					headers: headers,
 					body: JSON.stringify(data),
 				});
-				const result = await response.json();
-				if (result.error) {
-					alert(result.error);
+
+				if (response.status == 200) {
+					document.getElementById('msg1').style.display = 'none';
+					document.getElementById('msg2').style.display = 'none';
+					document.getElementById('msg3').style.display = 'none';
+					document.getElementById('msg4').style.display = 'none';
+
 					
-				} else {
-					// alert(result.message);
-					//push
+					document.getElementById('msg3').style.display = 'block';
+
+
+					const msg = document.getElementById('friend_name');
+					if (msg) msg.style.marginBottom = '0px';
+					
+					
+					await new Promise(r => setTimeout(r, 1000));
+					
 					window.history.pushState({}, "", "/friends");
 					urlLocationHandler();
+				}
+				else {
+					const result = await response.json();
+					display_friend_error(result.message);
 				}
 			}
 			catch (error) {
@@ -181,5 +358,240 @@ function addFriend() {
 				alert('An error occurred');
 			}
 		}
+	}
+}
+
+function display_friend_error(error) {
+	
+	resetErrorDisplay_friend();
+	if (error) {
+		const errMsg = error;
+		const errorElementId = `msg${errMsg.charAt(3)}`;
+		const errorElement = document.getElementById(errorElementId);
+
+		if (errorElement) {
+            errorElement.style.display = 'block'; 
+			errorElement.style.marginBottom = '20px';
+
+	const msg = document.getElementById('friend_name');
+	if (msg) msg.style.marginBottom = '0px';
+			// errorElement.style.marginBottom = '0px';
+			
+        }
+	}
+
+
+}
+
+function resetErrorDisplay_friend() {
+    document.querySelectorAll('.text-danger').forEach(errorElement => {
+        errorElement.style.display = 'none';
+    });
+	const msg = document.getElementById('friend_name');
+	if (msg) msg.style.marginBottom = '20px';
+}
+
+// Update avatar
+
+async function changeav() {
+    const avatarInput = document.getElementById('avatar');
+   
+
+    const file = avatarInput.files[0];
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const jwtToken = localStorage.getItem('jwt');
+    const jwtTokenCookie = getCookie('jwt');
+
+    
+    let headers = {};
+    if (jwtToken) {
+        headers['Authorization'] = `Bearer ${jwtToken}`;
+    } else if (jwtTokenCookie) {
+        headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
+    }
+
+    try {
+        const response = await fetch('http://localhost:82/avatar/', {
+            method: 'POST',
+            headers: headers, 
+            body: formData,
+        });
+        const result = await response.json();
+		if (result.status === 200) {
+			window.history.pushState({}, "", "/profile");
+			urlLocationHandler();
+		}
+
+       else {
+            // alert(result.message);
+
+			const span = document.getElementById("av_err");
+			span.style.display = 'none';
+			span.style.display = 'block';
+        } 
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An error occurred');
+    }
+}
+
+
+//fetch history object for tournament
+async function fetchHistory() {
+	const jwtToken = localStorage.getItem('jwt');
+	const jwtTokenCookie = getCookie('jwt');
+
+	let headers = {
+		'Accept': 'application/json',
+		'Content-Type': 'application/json',
+	};
+	if (jwtToken) {
+		headers['Authorization'] = `Bearer ${jwtToken}`;
+	} else if (jwtTokenCookie) {
+		headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
+	}
+
+	try {
+		const response = await fetch('http://localhost:84/tournement/stats/', { 
+			method: 'GET',
+			headers: headers,
+		});
+
+		if (response.status === 201) {
+			// alert('ok');
+			const data = await response.json();
+			return data.gamesdata; 
+		} else {
+			console.error('Failed to fetch history', response.status);
+			return []; 
+		}
+	} catch (error) {
+		console.error('Error fetching history:', error);
+		return []; 
+	}
+}
+
+// populate history  tournament
+async function populateHistory() {
+	const ff = document.getElementById('ppp');
+	if (ff) {
+	
+		const history = await fetchHistory(); 
+		const historyTable = document.querySelector('.history-table tbody');
+		historyTable.innerHTML = '';
+
+		history.forEach(game => {
+			const tr = document.createElement('tr');
+
+			const td1 = document.createElement('td');
+            td1.textContent = new Date(game.finished_at).toLocaleDateString();
+            tr.appendChild(td1);
+
+			const wonTd = document.createElement('td');
+            // wonTd.textContent = game.is_player1 ? "Yes" : "No";
+            if (game.is_player1) {
+                wonTd.style.backgroundColor = 'green'; 
+            }
+			else {
+				wonTd.style.backgroundColor = 'white';
+			}
+            tr.appendChild(wonTd);
+
+
+			const lostTd = document.createElement('td');
+            // lostTd.textContent = game.is_player1 ? "No" : "Yes";
+            if (!game.is_player1) {
+                lostTd.style.backgroundColor = 'red'; 
+            }
+			else {
+				lostTd.style.backgroundColor = 'white';
+			}
+            tr.appendChild(lostTd);
+
+
+			historyTable.appendChild(tr);
+		});
+	}
+}
+
+
+//fetch history object for 1vs1
+
+async function fetchHistory1vs1() {
+	const jwtToken = localStorage.getItem('jwt');
+	const jwtTokenCookie = getCookie('jwt');
+
+	let headers = {
+		'Accept': 'application/json',
+		'Content-Type': 'application/json',
+	};
+	if (jwtToken) {
+		headers['Authorization'] = `Bearer ${jwtToken}`;
+	} else if (jwtTokenCookie) {
+		headers['Authorization'] = `Bearer ${jwtTokenCookie}`;
+	}
+
+	try {
+		const response = await fetch('http://localhost:84/game/stats/', { 
+			method: 'GET',
+			headers: headers,
+		});
+
+		if (response.status === 201) {
+			const data = await response.json();
+			return data.gamesdata; 
+			alert('okkkk');
+		} else {
+			console.error('Failed to fetch history', response.status);
+			return []; 
+		}
+	} catch (error) {
+		console.error('Error fetching history:', error);
+		return []; 
+	}
+}
+// populate history 1vs1
+async function populateHistory1vs1() {
+	const ff = document.getElementById('ccc');
+
+	if (ff) {
+	
+		const history = await fetchHistory1vs1(); 
+		const historyTable = document.querySelector('.history-tablevs tbody');
+		historyTable.innerHTML = '';
+
+		history.forEach(game => {
+			const tr = document.createElement('tr');
+
+			const td1 = document.createElement('td');
+			td1.textContent = new Date(game.finished_at).toLocaleDateString();
+			tr.appendChild(td1);
+
+			const wonTd = document.createElement('td');
+			// wonTd.textContent = game.is_player1 ? "Yes" : "No";
+			if (game.is_player1) {
+				wonTd.style.backgroundColor = 'green'; 
+			}
+			else
+			{
+				wonTd.style.backgroundColor = 'white';
+			}
+			tr.appendChild(wonTd);
+
+			const lostTd = document.createElement('td');
+			// lostTd.textContent = game.is_player1 ? "No" : "Yes";
+			if(!game.is_player1) {
+				lostTd.style.backgroundColor = 'red'; 
+			}
+			else
+			{
+				lostTd.style.backgroundColor = 'white';
+			}
+			tr.appendChild(lostTd);
+			historyTable.appendChild(tr);
+		}
+		);
 	}
 }

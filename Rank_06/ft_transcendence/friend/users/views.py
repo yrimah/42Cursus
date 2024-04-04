@@ -12,7 +12,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 import jwt
 from rest_framework import exceptions
-from .jwt import token_generation, get_user_id
+from .jwt import token_generation
 from .decorators import token_required
 from django.utils.decorators import method_decorator
 from django.db.models import Q
@@ -26,7 +26,7 @@ from .serializers import ProfileSerializer
 
 class FriendsView(APIView):
     @method_decorator(token_required)
-    def get(self, request):  # get friends, friend requests, or friend invites
+    def get(self, request):
         current_user_username = request.user_payload['user']['username']
 
         try:
@@ -46,31 +46,30 @@ class FriendsView(APIView):
         return Response({"status": 200, "friendships": friends_data}, status=status.HTTP_200_OK)
 
     @method_decorator(token_required)
-    def post(self, request):  # send friend request
+    def post(self, request):
         sender_username = request.user_payload['user']['username']
         receiver_username = request.data.get('username')
 
         if not receiver_username:
             return Response({"status": 400, "message": "Receiver username is required."}, status=status.HTTP_400_BAD_REQUEST)
         if sender_username == receiver_username:
-            return Response({"status": 400, "message": "You cannot send a friend request to yourself."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": 400, "message": "msg1"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             sender = CustomUser.objects.get(username=sender_username)
             receiver = CustomUser.objects.get(username=receiver_username)
 
-            # Check if there's already a friend request in any direction
             existing_friend = Friends.objects.filter(
                 Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
             ).first()
 
             if existing_friend:
-                return Response({"status": 400, "message": "Friend already exists."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": 400, "message": "msg2"}, status=status.HTTP_400_BAD_REQUEST)
             
-            Friends.objects.create(sender=sender, receiver=receiver, status='pending')  # Assuming status should be 'pending' initially
-            return Response({"status": 200, "message": "Friend added successfully."}, status=status.HTTP_200_OK)
+            Friends.objects.create(sender=sender, receiver=receiver, status='pending')
+            return Response({"status": 200, "message": "msg3"}, status=status.HTTP_200_OK)
 
         except CustomUser.DoesNotExist:
-            return Response({"status": 404, "message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"status": 404, "message": "msg4"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": 500, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

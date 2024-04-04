@@ -19,6 +19,10 @@ const urlRoutes = {
 		template: "/Frontend/Pages/game.html",
 		description: "This is Game page",
 	},
+	"/tournement": {
+		template: "/Frontend/Pages/tournement.html",
+		description: "This is tournement page",
+	},
 	"/profile": {
 		template: "/Frontend/Pages/profile.html",
 		description: "This is the profile page",
@@ -42,13 +46,6 @@ const urlRoutes = {
 	"/history": {
 		template: "/Frontend/Pages/history.html",
 		description: "This is the history page",
-	},
-	
-
-
-	"/2fa": {
-		template: "/Frontend/Pages/2fa.html",
-		description: "This is the 2fa page",
 	},
 
 
@@ -79,6 +76,7 @@ const urlLocationHandler = async () => {
 	}
 
 	checkLoginStatus();
+	
 	const status = localStorage.getItem('logged_in');
 	if (status === 'yes' && (locationn === '/sign_in' || locationn === '/sign_up')){
 		// alert("You are already logged in");
@@ -88,7 +86,7 @@ const urlLocationHandler = async () => {
 		urlLocationHandler();
 		console.log("You are already logged in");
 	}
-	else if (status !== 'yes' && (locationn === '/profile' || locationn === '/game' || locationn === '/friends' || locationn === '/settings' || locationn === '/go_pwd' || locationn === '/history')){
+	else if (status !== 'yes' && (locationn === '/profile' || locationn === '/game' || locationn === '/friends' || locationn === '/settings' || locationn === '/go_pwd' || locationn === '/history' || locationn === '/game_b')){
 		// alert("You need to be logged in to access this page");
 		locationn = "/sign_in";
 		//change pathname
@@ -122,7 +120,8 @@ const urlLocationHandler = async () => {
 	updatePassword();
 	updateUsername();
 	addFriend();
-	// fetchAndPrefillUserInfo();
+	populateHistory();
+	populateHistory1vs1();
 
 	const init_lang = getSavedLanguagePreference();
 	const language = await import(`./Lang_files/lang.${init_lang}.js`);
@@ -132,9 +131,6 @@ const urlLocationHandler = async () => {
 	if (locationn === '/') {
         runPongAnimation();
     }
-	if (locationn === '/game') {
-		runGame();
-	}
 };
 
 function getSavedLanguagePreference() {

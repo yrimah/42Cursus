@@ -217,12 +217,39 @@
 	  transform: translateY(10px);
 	}
 }
-  
+@media (min-width: 1500px) {
+    .profile-card {
+        width: 400px; 
+        padding: 40px; 
+        font-size: 1.2rem; 
+    }
+
+    .avatar {
+        width: 140px; 
+        height: 140px; 
+        border: 5px solid #FF46F6; 
+    }
+
+    .stats {
+        margin-top: 40px; 
+    }
+
+    .stat-value {
+        font-size: 1.6rem; 
+    }
+
+    .stat-label {
+        font-size: 0.8rem; 
+    }
+
+    .box {
+        padding: 20px 40px; 
+    }
+}
 
   
 
-
-
+  
 
 
 /* game_b style */
@@ -271,9 +298,105 @@
 		transform: translateX(-10px);
 	}
 }
+@media (min-width: 1500px) {
+    .game-section {
+        background-size: 800% 800%; 
+    }
+
+    .btn-game {
+        font-size: 1.2em; 
+        padding: 15px 30px; 
+        margin: 10px; 
+    }
+
+    #oneVsOne, #tournament {
+        animation-duration: 5s; 
+    }
+
+    .retro-gif {
+        max-width: 75%; 
+        margin: 40px auto; 
+    }
+
+    @keyframes float_btn1 {
+        0%, 100% {
+            transform: translateX(-30px); 
+        }
+        50% {
+            transform: translateX(30px);
+        }
+    }
+
+    @keyframes float_btn2 {
+        0%, 100% {
+            transform: translateX(20px);
+        }
+        50% {
+            transform: translateX(-20px);
+        }
+    }
+}
+
+
+
+
 
 
 /* Settings style */
+
+
+
+
+  /* history */
+.history-page {
+    font-family: 'Press Start 2P', cursive; 
+    color: #FF46F6;
+    
+}
+.l {
+
+    margin-left: 40px;
+}
+
+.retro-table {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid #FF46F6;
+}
+
+.table-title {
+    color: #FF46F6;
+    text-align: center;
+}
+
+.table {
+    color: #FF46F6;
+}
+
+.table th, .table td {
+    border: 1px solid #FF46F6;
+}
+.table-responsive {
+    height: 150px; 
+    overflow-y: auto; 
+    
+}
+
+.table-responsive::-webkit-scrollbar {
+    width: 12px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #FF46F6;
+    border-radius: 20px;
+    border: 3px solid #000;
+}
+
 
 
 /* Friends style */
@@ -320,51 +443,3 @@
 	color: #666; 
   }
   
-
-  /* history */
-
-
-  .history-page {
-    font-family: 'Press Start 2P', cursive; 
-    color: #FF46F6;
-    
-}
-
-.retro-table {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.75);
-    border: 1px solid #FF46F6;
-}
-
-.table-title {
-    color: #FF46F6;
-    text-align: center;
-}
-
-.table {
-    color: #FF46F6;
-}
-
-.table th, .table td {
-    border: 1px solid #FF46F6;
-}
-.table-responsive {
-    height: 150px; 
-    overflow-y: auto; 
-    
-}
-
-.table-responsive::-webkit-scrollbar {
-    width: 12px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background: #000;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background-color: #FF46F6;
-    border-radius: 20px;
-    border: 3px solid #000;
-}

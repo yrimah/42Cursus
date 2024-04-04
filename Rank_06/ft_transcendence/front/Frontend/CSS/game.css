@@ -11,11 +11,15 @@
 	justify-content: center;
 	align-items: center;
 }
+#gameCanvas {
+    max-width: 100%;
+    height: auto;
+}
 
-.z {
+.po {
     border: none;
     padding: 1vw 2vw; 
-    font-size: 4vw;
+    font-size: 2vw;
     background: transparent;
     color: #ff46f6;
     font-family: 'Press Start 2P';
@@ -31,7 +35,7 @@
 	text-decoration: none;
 }
 
-.z:hover {
+.po:hover {
     text-shadow:
         0 0 10px #ff46f6,
         0 0 15px #ff46f6,

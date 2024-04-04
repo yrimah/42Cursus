@@ -2,7 +2,7 @@ from .models import CustomUser
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import ProfileSerializer, UpdateProfileSerializer
+from .serializers import ProfileSerializer
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -14,7 +14,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 import jwt
 from rest_framework import exceptions
-from .jwt import token_generation, get_user_id
+from .jwt import token_generation
 from .decorators import token_required
 from django.utils.decorators import method_decorator
 from django.db.models import Q
@@ -46,26 +46,41 @@ class Profile(APIView):
 
     @method_decorator(token_required)
     def put(self, request):
+        user_id = request.user_payload['user']['id']
+        username = request.data.get('username')
+        display_name = request.data.get('display_name')
+        double_auth = request.data.get('double_auth', None)
+
+        if username is not None and CustomUser.objects.filter(username=username).exclude(id=user_id).exists():
+            return Response({"success": False, "error": {"username": "This username is already taken."}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if display_name is not None and CustomUser.objects.filter(display_name=display_name).exclude(id=user_id).exists():
+            return Response({"success": False, "error": {"display_name": "This display name is already taken."}}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            user_data = request.data
-            user = CustomUser.objects.filter(id=request.user_payload['user']['id']).first()
-            serializer = UpdateProfileSerializer(user, data=user_data, partial=True)  # partial=True allows for partial updates
+            user = CustomUser.objects.get(id=user_id)
+            if username is not None:
+                user.username = username
+            if display_name is not None:
+                user.display_name = display_name
+            if double_auth is not None:
+                user.double_auth = double_auth
             
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"status": 200, "message": "User updated successfully", "user": serializer.data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"status": 400, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            user.save()
+            return Response({"success": True, "message": "Profile updated successfully."}, status=status.HTTP_200_OK)
+
         except CustomUser.DoesNotExist:
-            return Response({"status": 404, "error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except IntegrityError as e: 
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"status": 500, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"success": False, "error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #####################################################
 #         avatar upload with CDN UploadCare         #
 #####################################################
 
-class PlayerAvatarUpload(APIView): # CDN UploadCare to be tested after installing the package (gotta check w/ yassine)
+class PlayerAvatarUpload(APIView):
     @method_decorator(token_required)
     def post(self, request):
         uploadcare = Uploadcare(public_key=settings.UPLOADCARE['pub_key'], secret_key=settings.UPLOADCARE['secret'])
@@ -127,15 +142,15 @@ class ChangePasswordView(APIView):
         new_password = request.data.get('new_password')
 
         if not old_password:
-            return Response({"old_password": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": {"old_password": ["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
         if not new_password:
-            return Response({"new_password": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": {"new_password": ["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
         if not user.check_password(old_password):
-            return Response({"old_password": ["Old password is incorrect."]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": {"old_p": ["Old password is incorrect."]}}, status=status.HTTP_400_BAD_REQUEST)
         try:
             validate_password(new_password, user)
         except ValidationError as e:
-            return Response({"new_password": list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": {"new_p": [e.messages]}}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(new_password)
         user.save()
